@@ -4,6 +4,8 @@ package MicroServicio.Stock.infrastructure.input.rest;
 import MicroServicio.Stock.application.dto.request.CategoryRequest;
 import MicroServicio.Stock.application.dto.response.CategoryResponse;
 import MicroServicio.Stock.application.handler.ICategoryHandler;
+import MicroServicio.Stock.domain.pagination.PageCustom;
+import MicroServicio.Stock.domain.pagination.PageRequestCustom;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -77,5 +79,20 @@ public class CategoryRestController {
     public ResponseEntity<Void> deleteCategory(@PathVariable String name) {
         categoryHandler.deleteCategory(name);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/paged")
+    public ResponseEntity<PageCustom<CategoryResponse>> getCategoriesPaged(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "name,asc") String[] sort) {
+
+        // Divide el sort en campo y orden
+        String sortField = sort[0]; // campo para ordenar
+        boolean ascending = sort.length > 1 && sort[1].equalsIgnoreCase("asc");
+
+        PageRequestCustom pageRequest = new PageRequestCustom(page, size, ascending, sortField);
+        PageCustom<CategoryResponse> categoriesPage = categoryHandler.getCategories(pageRequest);
+        return ResponseEntity.ok(categoriesPage);
     }
 }
