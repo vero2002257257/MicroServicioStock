@@ -2,6 +2,8 @@ package MicroServicio.Stock.domain.usecase;
 
 import MicroServicio.Stock.domain.exceptions.InvalidCategoryDataException;
 import MicroServicio.Stock.domain.models.Category;
+import MicroServicio.Stock.domain.pagination.PageCustom;
+import MicroServicio.Stock.domain.pagination.PageRequestCustom;
 import MicroServicio.Stock.domain.spi.ICategoryPersistencePort;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -85,5 +87,34 @@ class CategoryUseCaseTest {
 
         assertTrue(categories.isEmpty());
         verify(categoryPersistencePort).GetAllCategories(); // Cambiar a minúsculas
+    }
+
+    @Test
+    void getCategories_ShouldReturnCategoriesPage_WhenCategoriesExist() {
+        // Datos de prueba
+        PageRequestCustom pageRequest = new PageRequestCustom(0, 10, true, "name");
+        PageCustom<Category> expectedPage = new PageCustom<>();
+
+        // Agrega categorías a expectedPage si es necesario
+        List<Category> mockCategories = Arrays.asList(
+                new Category(1L, "Carros 1", "Descripción 1"),
+                new Category(2L, "Sombreros 2", "Descripción 2")
+        );
+        expectedPage.setContent(mockCategories);
+        expectedPage.setTotalElements(2); // Asumiendo que hay 2 categorías en total
+        expectedPage.setTotalPages(1); // Asumiendo que todas caben en una página
+
+        // Configuración del comportamiento esperado
+        when(categoryPersistencePort.getCategories(pageRequest)).thenReturn(expectedPage);
+
+        // Ejecución del metodo
+        PageCustom<Category> result = categoryUseCase.getCategories(pageRequest);
+
+        // Verificación
+        assertEquals(expectedPage, result);
+        assertEquals(2, result.getTotalElements());
+        assertEquals(1, result.getTotalPages());
+        assertEquals(mockCategories, result.getContent());
+        verify(categoryPersistencePort).getCategories(pageRequest);
     }
 }
