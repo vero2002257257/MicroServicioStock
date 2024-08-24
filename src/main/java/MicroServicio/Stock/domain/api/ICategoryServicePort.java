@@ -1,6 +1,8 @@
 package MicroServicio.Stock.domain.api;
 
 import MicroServicio.Stock.domain.models.Category;
+import MicroServicio.Stock.domain.pagination.PageCustom;
+import MicroServicio.Stock.domain.pagination.PageRequestCustom;
 
 import java.util.List;
 
@@ -10,4 +12,5 @@ public interface ICategoryServicePort {
     Category getCategoryByName(String name);
     void updateCategory(Category category);
     void deleteCategory(String name);
+    PageCustom<Category> getCategories(PageRequestCustom pageRequest);
 }

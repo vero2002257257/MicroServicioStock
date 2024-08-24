@@ -6,6 +6,8 @@ import MicroServicio.Stock.application.mapper.request.CategoryRequestMapper;
 import MicroServicio.Stock.application.mapper.response.CategoryResponseMapper;
 import MicroServicio.Stock.domain.api.ICategoryServicePort;
 import MicroServicio.Stock.domain.models.Category;
+import MicroServicio.Stock.domain.pagination.PageCustom;
+import MicroServicio.Stock.domain.pagination.PageRequestCustom;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -51,5 +53,18 @@ public class CategoryHandler implements ICategoryHandler {
     public void deleteCategory(String name) {
         Category category = categoryServicePort.getCategoryByName(name);
         categoryServicePort.deleteCategory(name);
+    }
+
+    @Override
+    public PageCustom<CategoryResponse> getCategories(PageRequestCustom pageRequest) {
+        PageCustom<Category> categoriesPage = categoryServicePort.getCategories(pageRequest);
+        List<CategoryResponse> responseList = categoryResponseMapper.toResponseList(categoriesPage.getContent());
+        return new PageCustom<>(
+                responseList,
+                categoriesPage.getTotalElements(),
+                categoriesPage.getTotalPages(),
+                categoriesPage.getCurrentPage(),
+                categoriesPage.isAscending()
+        );
     }
 }

@@ -1,5 +1,7 @@
 package MicroServicio.Stock.infrastructure.jpa.adapter;
 
+import MicroServicio.Stock.domain.pagination.PageCustom;
+import MicroServicio.Stock.domain.pagination.PageRequestCustom;
 import MicroServicio.Stock.infrastructure.exception.CategoryNotFoundException;
 import MicroServicio.Stock.domain.exceptions.DuplicateCategoryNameException;
 import MicroServicio.Stock.domain.models.Category;
@@ -9,6 +11,9 @@ import MicroServicio.Stock.infrastructure.jpa.entity.CategoryEntity;
 import MicroServicio.Stock.infrastructure.jpa.mapper.CategoryEntityMapper;
 import MicroServicio.Stock.infrastructure.jpa.repository.ICategoryRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 
 import java.util.List;
 
@@ -54,4 +59,26 @@ public class CategoryJpaAdapter implements ICategoryPersistencePort {
     public void deleteCategory(String name) {
         categoryRepository.deleteByName(name);
     }
+
+    @Override
+    public PageCustom<Category> getCategories(PageRequestCustom pageRequest) {
+        PageRequest pageRequestSpring = PageRequest.of(
+                pageRequest.getPage(),
+                pageRequest.getSize(),
+                pageRequest.isAscending() ? Sort.by(pageRequest.getSortField()).ascending() : Sort.by(pageRequest.getSortField()).descending()
+        );
+
+        Page<CategoryEntity> categoryEntityPage = categoryRepository.findAll(pageRequestSpring);
+
+        List<Category> categories = categoryEntityMapper.toListCategory(categoryEntityPage.getContent());
+
+        return new PageCustom<>(
+                categories,
+                (int) categoryEntityPage.getTotalElements(),
+                categoryEntityPage.getTotalPages(),
+                categoryEntityPage.getNumber(),
+                pageRequest.isAscending()
+        );
+    }
 }
+
