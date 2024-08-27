@@ -1,8 +1,7 @@
-package MicroServicio.Stock.application.handler;
+package MicroServicio.Stock.application.handler.interfaces;
 
 import MicroServicio.Stock.application.dto.request.CategoryRequest;
 import MicroServicio.Stock.application.dto.response.CategoryResponse;
-import MicroServicio.Stock.domain.models.Category;
 import MicroServicio.Stock.domain.pagination.PageCustom;
 import MicroServicio.Stock.domain.pagination.PageRequestCustom;
 
