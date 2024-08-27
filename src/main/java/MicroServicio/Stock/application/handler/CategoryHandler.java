@@ -2,6 +2,7 @@ package MicroServicio.Stock.application.handler;
 
 import MicroServicio.Stock.application.dto.request.CategoryRequest;
 import MicroServicio.Stock.application.dto.response.CategoryResponse;
+import MicroServicio.Stock.application.handler.interfaces.ICategoryHandler;
 import MicroServicio.Stock.application.mapper.request.CategoryRequestMapper;
 import MicroServicio.Stock.application.mapper.response.CategoryResponseMapper;
 import MicroServicio.Stock.domain.api.ICategoryServicePort;
@@ -23,13 +24,10 @@ public class CategoryHandler implements ICategoryHandler {
     private final CategoryRequestMapper categoryRequestMapper;
     private final CategoryResponseMapper categoryResponseMapper;
 
-
-
     @Override
     public void createCategory(CategoryRequest categoryRequest) {
         Category category = categoryRequestMapper.toCategory(categoryRequest);
         categoryServicePort.createCategory(category);
-
     }
 
     @Override

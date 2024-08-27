@@ -3,7 +3,7 @@ package MicroServicio.Stock.infrastructure.input.rest;
 
 import MicroServicio.Stock.application.dto.request.CategoryRequest;
 import MicroServicio.Stock.application.dto.response.CategoryResponse;
-import MicroServicio.Stock.application.handler.ICategoryHandler;
+import MicroServicio.Stock.application.handler.interfaces.ICategoryHandler;
 import MicroServicio.Stock.domain.pagination.PageCustom;
 import MicroServicio.Stock.domain.pagination.PageRequestCustom;
 import io.swagger.v3.oas.annotations.Operation;
