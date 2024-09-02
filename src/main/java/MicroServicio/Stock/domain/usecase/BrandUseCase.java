@@ -3,6 +3,8 @@ package MicroServicio.Stock.domain.usecase;
 import MicroServicio.Stock.domain.api.IBrandServicePort;
 import MicroServicio.Stock.domain.exceptions.InvalidBrandDataException;
 import MicroServicio.Stock.domain.models.Brand;
+import MicroServicio.Stock.domain.pagination.PageCustom;
+import MicroServicio.Stock.domain.pagination.PageRequestCustom;
 import MicroServicio.Stock.domain.spi.IBrandPersistencePort;
 
 import java.util.List;
@@ -49,5 +51,17 @@ public class BrandUseCase implements IBrandServicePort {
     @Override
     public void deleteBrand(String name) {
         brandPersistencePort.deleteBrand(name);
+    }
+    @Override
+    public PageCustom<Brand> getBrands(PageRequestCustom pageRequest) {
+        // Llamar al puerto de persistencia para obtener las categorías paginadas
+        PageCustom<Brand> brandsPage = brandPersistencePort.getBrands(pageRequest);
+
+        // Validar que la respuesta no sea nula y que el contenido no sea nulo o vacío
+        if (brandsPage == null || brandsPage.getContent() == null || brandsPage.getContent().isEmpty()) {
+            throw new InvalidBrandDataException("No se encontraron marcas.");
+        }
+
+        return brandsPage;
     }
 }

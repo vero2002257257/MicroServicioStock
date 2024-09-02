@@ -1,5 +1,7 @@
 package MicroServicio.Stock.infrastructure.jpa.adapter;
 
+import MicroServicio.Stock.domain.pagination.PageCustom;
+import MicroServicio.Stock.domain.pagination.PageRequestCustom;
 import MicroServicio.Stock.infrastructure.exception.DuplicateBrandNameException;
 import MicroServicio.Stock.domain.models.Brand;
 import MicroServicio.Stock.domain.spi.IBrandPersistencePort;
@@ -9,6 +11,9 @@ import MicroServicio.Stock.infrastructure.jpa.entity.BrandEntity;
 import MicroServicio.Stock.infrastructure.jpa.mapper.BrandEntityMapper;
 import MicroServicio.Stock.infrastructure.jpa.repository.IBrandRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 
 import java.util.List;
 
@@ -51,5 +56,25 @@ public class BrandJpaAdapter implements IBrandPersistencePort {
     @Override
     public void deleteBrand(String name) {
         brandRepository.deleteByName(name);
+    }
+    @Override
+    public PageCustom<Brand> getBrands(PageRequestCustom pageRequest) {
+        PageRequest pageRequestSpring = PageRequest.of(
+                pageRequest.getPage(),
+                pageRequest.getSize(),
+                pageRequest.isAscending() ? Sort.by(pageRequest.getSortField()).ascending() : Sort.by(pageRequest.getSortField()).descending()
+        );
+
+        Page<BrandEntity> brandEntityPage = brandRepository.findAll(pageRequestSpring);
+
+        List<Brand> brands = brandEntityMapper.toListBrand(brandEntityPage.getContent());
+
+        return new PageCustom<>(
+                brands,
+                (int) brandEntityPage.getTotalElements(),
+                brandEntityPage.getTotalPages(),
+                brandEntityPage.getNumber(),
+                pageRequest.isAscending()
+        );
     }
 }

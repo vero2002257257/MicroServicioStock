@@ -2,6 +2,8 @@ package MicroServicio.Stock.domain.usecase;
 
 import MicroServicio.Stock.domain.exceptions.InvalidBrandDataException;
 import MicroServicio.Stock.domain.models.Brand;
+import MicroServicio.Stock.domain.pagination.PageCustom;
+import MicroServicio.Stock.domain.pagination.PageRequestCustom;
 import MicroServicio.Stock.domain.spi.IBrandPersistencePort;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -10,6 +12,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -103,5 +106,59 @@ class BrandUseCaseTest {
 
         assertDoesNotThrow(() -> brandUseCase.deleteBrand(brandName));
         verify(brandPersistencePort, times(1)).deleteBrand(brandName);
+    }
+
+    @Test
+    void testGetBrandsSuccess() {
+        // Arrange
+        PageRequestCustom pageRequest = new PageRequestCustom(0, 10,true,"name"); // Asume que PageRequestCustom tiene un constructor adecuado
+        PageCustom<Brand> expectedBrandsPage = new PageCustom<>(
+                List.of(new Brand(1L, "Brand1", "descripcion"), new Brand(2L, "Brand2","descripcion")),
+                pageRequest,
+                2
+        );
+
+        when(brandPersistencePort.getBrands(pageRequest)).thenReturn(expectedBrandsPage);
+
+        // Act
+        PageCustom<Brand> actualBrandsPage = brandUseCase.getBrands(pageRequest);
+
+        // Assert
+        assertNotNull(actualBrandsPage);
+        assertEquals(2, actualBrandsPage.getTotalElements());
+        verify(brandPersistencePort, times(1)).getBrands(pageRequest);
+    }
+
+    @Test
+    void testGetBrandsNoBrandsFound() {
+        // Arrange
+        PageRequestCustom pageRequest = new PageRequestCustom(0, 10, true,"name");
+        PageCustom<Brand> emptyBrandsPage = new PageCustom<>(Collections.emptyList(), pageRequest, 0);
+
+        when(brandPersistencePort.getBrands(pageRequest)).thenReturn(emptyBrandsPage);
+
+        // Act & Assert
+        InvalidBrandDataException exception = assertThrows(InvalidBrandDataException.class, () -> {
+            brandUseCase.getBrands(pageRequest);
+        });
+
+        assertEquals("No se encontraron marcas.", exception.getMessage());
+        verify(brandPersistencePort, times(1)).getBrands(pageRequest);
+    }
+
+    @Test
+    void testGetBrandsNullResponse() {
+        // Arrange
+        PageRequestCustom pageRequest = new PageRequestCustom(0, 10, true,"name");
+
+        when(brandPersistencePort.getBrands(pageRequest)).thenReturn(null);
+
+        // Act & Assert
+        InvalidBrandDataException exception = assertThrows(InvalidBrandDataException.class, () -> {
+            brandUseCase.getBrands(pageRequest);
+        });
+
+        assertEquals("No se encontraron marcas.", exception.getMessage());
+        verify(brandPersistencePort, times(1)).getBrands(pageRequest);
     }
 }

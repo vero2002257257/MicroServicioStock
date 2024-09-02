@@ -22,6 +22,9 @@ public class PageCustom <T>{
 
     }
 
+    public <E> PageCustom(List<E> es, PageRequestCustom pageRequest, int i) {
+    }
+
     public List<T> getContent() {
         return content;
     }

@@ -3,7 +3,11 @@ package MicroServicio.Stock.infrastructure.input.rest;
 import MicroServicio.Stock.application.dto.request.BrandRequest;
 import MicroServicio.Stock.application.dto.response.BrandResponse;
 import MicroServicio.Stock.application.handler.interfaces.IBrandHandler;
+import MicroServicio.Stock.domain.pagination.PageCustom;
+import MicroServicio.Stock.domain.pagination.PageRequestCustom;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
@@ -74,4 +78,27 @@ public class BrandRestController {
         brandHandler.deleteBrand(name);
         return ResponseEntity.noContent().build();
     }
+
+    @Operation(summary = "Get brands with pagination")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved paginated list of brands",
+                    content = @Content(schema = @Schema(implementation = PageCustom.class))),
+            @ApiResponse(responseCode = "404", description = "No brands found",
+                    content = @Content(schema = @Schema(implementation = Error.class)))
+    })
+    @GetMapping("/paged")
+    public ResponseEntity<PageCustom<BrandResponse>> getBrandsPage(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "name,asc") String[] sort) {
+
+        // Divide el sort en campo y orden
+        String sortField = sort[0]; // campo para ordenar
+        boolean ascending = sort.length > 1 && sort[1].equalsIgnoreCase("asc");
+
+        PageRequestCustom pageRequest = new PageRequestCustom(page, size, ascending, sortField);
+        PageCustom<BrandResponse> brandsPage = brandHandler.getBrands(pageRequest);
+        return ResponseEntity.ok(brandsPage);
+    }
+
 }
