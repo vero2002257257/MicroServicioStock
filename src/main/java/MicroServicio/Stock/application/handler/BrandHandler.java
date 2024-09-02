@@ -7,6 +7,8 @@ import MicroServicio.Stock.application.mapper.request.BrandRequestMapper;
 import MicroServicio.Stock.application.mapper.response.BrandResponseMapper;
 import MicroServicio.Stock.domain.api.IBrandServicePort;
 import MicroServicio.Stock.domain.models.Brand;
+import MicroServicio.Stock.domain.pagination.PageCustom;
+import MicroServicio.Stock.domain.pagination.PageRequestCustom;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -30,7 +32,7 @@ public class BrandHandler implements IBrandHandler {
 
     @Override
     public List<BrandResponse> getAllBrands() {
-        return brandResponseMapper.toBrandResponses(brandServicePort.getAllBrands());
+        return brandResponseMapper.toResponseList(brandServicePort.getAllBrands());
     }
 
     @Override
@@ -48,5 +50,18 @@ public class BrandHandler implements IBrandHandler {
     @Override
     public void deleteBrand(String name) {
         brandServicePort.deleteBrand(name);
+    }
+
+    @Override
+    public PageCustom<BrandResponse> getBrands(PageRequestCustom pageRequest) {
+        PageCustom<Brand> brandsPage = brandServicePort.getBrands(pageRequest);
+        List<BrandResponse> responseList = brandResponseMapper.toResponseList(brandsPage.getContent());
+        return new PageCustom<>(
+                responseList,
+                brandsPage.getTotalElements(),
+                brandsPage.getTotalPages(),
+                brandsPage.getCurrentPage(),
+                brandsPage.isAscending()
+        );
     }
 }
