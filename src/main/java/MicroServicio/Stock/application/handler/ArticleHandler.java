@@ -7,6 +7,8 @@ import MicroServicio.Stock.application.mapper.request.ArticleRequestMapper;
 import MicroServicio.Stock.application.mapper.response.ArticleResponseMapper;
 import MicroServicio.Stock.domain.api.IArticleServicePort;
 import MicroServicio.Stock.domain.models.Article;
+import MicroServicio.Stock.domain.pagination.PageCustom;
+import MicroServicio.Stock.domain.pagination.PageRequestCustom;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,4 +43,20 @@ public class ArticleHandler implements IArticleHandler {
                 .map(articleResponseMapper::toResponse)
                 .toList();
     }
+    @Override
+    public PageCustom<ArticleResponse> getArticles(PageRequestCustom pageRequest, String brandName, String categoryName) {
+
+        PageCustom<Article> articlesPage = articleServicePort.getArticlesByPage(pageRequest, brandName, categoryName);
+
+        // Transformar a ArticleResponse
+        List<ArticleResponse> articleResponses = articleResponseMapper.toResponseList(articlesPage.getContent());
+        return new PageCustom<>(
+                articleResponses,
+                articlesPage.getTotalElements(),
+                articlesPage.getTotalPages(),
+                articlesPage.getCurrentPage(),
+                articlesPage.isAscending()
+        );
+    }
+
 }

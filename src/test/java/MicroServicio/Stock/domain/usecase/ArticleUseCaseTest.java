@@ -1,10 +1,12 @@
 package MicroServicio.Stock.domain.usecase;
 
-import MicroServicio.Stock.domain.exceptions.DuplicateCategoryNameException;
-import MicroServicio.Stock.domain.exceptions.InvalidCategoryDataException;
+import MicroServicio.Stock.domain.exceptions.*;
 import MicroServicio.Stock.domain.models.Article;
 import MicroServicio.Stock.domain.models.Category;
+import MicroServicio.Stock.domain.pagination.PageCustom;
+import MicroServicio.Stock.domain.pagination.PageRequestCustom;
 import MicroServicio.Stock.domain.spi.IArticlePersistencePort;
+import MicroServicio.Stock.infrastructure.exception.ArticleNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -12,6 +14,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -133,5 +136,67 @@ class ArticleUseCaseTest {
 
         assertEquals(2, result.size());
         assertEquals(articles, result);
+    }
+    @Test
+    void getArticlesByPage_WhenPageIsEmptyAndBrandAndCategoryAreProvided_ShouldThrowArticleNotFoundForBrandAndCategoryException() {
+        PageRequestCustom pageRequest = new PageRequestCustom(1, 10, true, "name");
+        when(iArticlePersistencePort.getArticlesByPage(pageRequest, "Nike", "Shoes"))
+                .thenReturn(new PageCustom<>(Collections.emptyList(), 1, 10, 0, true));
+
+        assertThrows(ArticleNotFoundForBrandAndCategoryException.class, () ->
+                articleUseCase.getArticlesByPage(pageRequest, "Nike", "Shoes"));
+    }
+
+    @Test
+    void getArticlesByPage_WhenPageIsEmptyAndBrandIsProvided_ShouldThrowArticleNotFoundForBrandException() {
+        PageRequestCustom pageRequest = new PageRequestCustom(1, 10, true, "name");
+        when(iArticlePersistencePort.getArticlesByPage(pageRequest, "Nike", null))
+                .thenReturn(new PageCustom<>(Collections.emptyList(), 1, 10, 0, true));
+
+        assertThrows(ArticleNotFoundForBrandException.class, () ->
+                articleUseCase.getArticlesByPage(pageRequest, "Nike", null));
+    }
+
+    @Test
+    void getArticlesByPage_WhenPageIsEmptyAndCategoryIsProvided_ShouldThrowArticleNotFoundForCategoryException() {
+        PageRequestCustom pageRequest = new PageRequestCustom(1, 10, true, "name");
+        when(iArticlePersistencePort.getArticlesByPage(pageRequest, null, "Shoes"))
+                .thenReturn(new PageCustom<>(Collections.emptyList(), 1, 10, 0, true));
+
+        assertThrows(ArticleNotFoundForCategoryException.class, () ->
+                articleUseCase.getArticlesByPage(pageRequest, null, "Shoes"));
+    }
+
+    @Test
+    void getArticlesByPage_WhenPageIsEmptyAndNoBrandOrCategoryProvided_ShouldThrowArticleNotFoundException() {
+        PageRequestCustom pageRequest = new PageRequestCustom(1, 10, true, "name");
+        when(iArticlePersistencePort.getArticlesByPage(pageRequest, null, null))
+                .thenReturn(new PageCustom<>(Collections.emptyList(), 1, 10, 0, true));
+        when(iArticlePersistencePort.getArticlesByPage(pageRequest, null, null))
+                .thenReturn(new PageCustom<>(Collections.emptyList(), 1, 10, 0, true));
+
+        assertThrows(ArticleNotFoundException.class, () ->
+                articleUseCase.getArticlesByPage(pageRequest, null, null));
+    }
+
+    @Test
+    void getArticlesByPage_WhenArticlesArePresent_ShouldFilterCategoriesAndReturnPage() {
+        PageRequestCustom pageRequest = new PageRequestCustom(1, 10, true, "name");
+        Article article = new Article();
+        Category category = new Category(1L, "Electronics", "Devices and gadgets");
+        article.setCategories(List.of(category));
+
+        PageCustom<Article> expectedPage = new PageCustom<>(List.of(article), 1, 10, 1, true);
+        when(iArticlePersistencePort.getArticlesByPage(pageRequest, null, null))
+                .thenReturn(expectedPage);
+
+        PageCustom<Article> result = articleUseCase.getArticlesByPage(pageRequest, null, null);
+
+        assertEquals(1, result.getContent().size());
+        assertEquals(1L, result.getContent().get(0).getCategories().get(0).getId());
+        assertEquals("Electronics", result.getContent().get(0).getCategories().get(0).getName());
+        assertEquals(null, result.getContent().get(0).getCategories().get(0).getDescription());
+
+        verify(iArticlePersistencePort, times(1)).getArticlesByPage(pageRequest, null, null);
     }
 }

@@ -1,11 +1,13 @@
 package MicroServicio.Stock.domain.usecase;
 
 import MicroServicio.Stock.domain.api.IArticleServicePort;
-import MicroServicio.Stock.domain.exceptions.DuplicateCategoryNameException;
-import MicroServicio.Stock.domain.exceptions.InvalidCategoryDataException;
+import MicroServicio.Stock.domain.exceptions.*;
 import MicroServicio.Stock.domain.models.Article;
 import MicroServicio.Stock.domain.models.Category;
+import MicroServicio.Stock.domain.pagination.PageCustom;
+import MicroServicio.Stock.domain.pagination.PageRequestCustom;
 import MicroServicio.Stock.domain.spi.IArticlePersistencePort;
+import MicroServicio.Stock.infrastructure.exception.ArticleNotFoundException;
 
 import java.util.HashSet;
 import java.util.List;
@@ -48,4 +50,35 @@ public class ArticleUseCase implements IArticleServicePort {
     public List<Article> getAllArticles() {
         return iArticlePersistencePort.getAllArticles();
     }
+    @Override
+    public PageCustom<Article> getArticlesByPage(PageRequestCustom pageRequest, String brandName, String categoryName) {
+        PageCustom<Article> articlesPage = iArticlePersistencePort.getArticlesByPage(pageRequest, brandName, categoryName);
+
+        // Verificar si la página de artículos está vacía
+        if (articlesPage.getContent().isEmpty()) {
+            if (brandName != null && !brandName.isEmpty() && categoryName != null && !categoryName.isEmpty()) {
+                throw new ArticleNotFoundForBrandAndCategoryException(
+                        "No hay artículos encontrados con la marca: " + brandName + " y la categoría: " + categoryName);
+            } else if (brandName != null && !brandName.isEmpty()) {
+                throw new ArticleNotFoundForBrandException(
+                        "No hay artículos encontrados con la marca: " + brandName);
+            } else if (categoryName != null && !categoryName.isEmpty()) {
+                throw new ArticleNotFoundForCategoryException(
+                        "No hay artículos encontrados con la categoría: " + categoryName);
+            } else {
+                throw new ArticleNotFoundException("No se encontraron artículos.");
+            }
+        }
+
+        // Filtrar categorías para incluir solo id y nombre
+        articlesPage.getContent().forEach(article -> {
+            List<Category> categories = article.getCategories().stream()
+                    .map(category -> new Category(category.getId(), category.getName(), null)) // Excluir descripción
+                    .toList();
+            article.setCategories(categories);
+        });
+
+        return articlesPage;
+    }
+
 }
