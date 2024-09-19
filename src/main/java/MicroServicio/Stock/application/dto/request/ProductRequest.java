@@ -8,7 +8,7 @@ import java.util.Set;
 
 @Getter
 @Setter
-public class ArticleRequest {
+public class ProductRequest {
     @NotBlank
     private String name;
     @NotBlank
