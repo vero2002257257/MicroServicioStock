@@ -15,4 +15,6 @@ public interface IBrandHandler {
     void updateBrand(BrandRequest brandRequest);
     void deleteBrand(String name);
     PageCustom<BrandResponse> getBrands(PageRequestCustom pageRequest);
+
+    BrandResponse getBrandyByName(String name);
 }
