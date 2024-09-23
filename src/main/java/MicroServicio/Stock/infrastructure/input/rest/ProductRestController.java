@@ -1,6 +1,7 @@
 package MicroServicio.Stock.infrastructure.input.rest;
 
 import MicroServicio.Stock.application.dto.request.ProductRequest;
+import MicroServicio.Stock.application.dto.request.UpdateProductRequest;
 import MicroServicio.Stock.application.dto.response.ProductResponse;
 import MicroServicio.Stock.application.handler.interfaces.IProductHandler;
 import MicroServicio.Stock.domain.pagination.PageCustom;
@@ -11,6 +12,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -95,5 +97,10 @@ public class ProductRestController {
         return new ResponseEntity<>(articles, HttpStatus.OK);
     }
 
-
+    @PatchMapping("/updateStock")
+    @PreAuthorize("hasAuthority('ROLE_AUX_BODEGA')")
+    public ResponseEntity<Void> updateProductStock(@Valid @RequestBody UpdateProductRequest updateProductRequest) {
+        productHandler.updateProduct(updateProductRequest);
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
 }

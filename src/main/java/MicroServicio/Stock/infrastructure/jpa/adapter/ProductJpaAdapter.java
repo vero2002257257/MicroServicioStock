@@ -7,6 +7,7 @@ import MicroServicio.Stock.domain.pagination.PageCustom;
 import MicroServicio.Stock.domain.pagination.PageRequestCustom;
 import MicroServicio.Stock.domain.spi.IProductPersistencePort;
 import MicroServicio.Stock.infrastructure.exception.NoDataFoundException;
+import MicroServicio.Stock.infrastructure.exception.ProductNotFoundException;
 import MicroServicio.Stock.infrastructure.jpa.entity.ProductEntity;
 import MicroServicio.Stock.infrastructure.jpa.mapper.ProductEntityMapper;
 import MicroServicio.Stock.infrastructure.jpa.repository.IProductRepository;
@@ -20,6 +21,8 @@ import org.springframework.data.domain.Sort;
 import java.awt.print.Pageable;
 import java.util.List;
 import java.util.Optional;
+
+import static MicroServicio.Stock.utils.Constants.PRODUCT_NOT_FOUND;
 
 
 @RequiredArgsConstructor
@@ -81,5 +84,12 @@ public class ProductJpaAdapter implements IProductPersistencePort {
                 pageRequest.isAscending()
         );
     }
+    @Override
+    public void updateQuantity(Long productId, int quantity) {
+        ProductEntity productEntity = productRepository.findById(productId)
+                .orElseThrow(() -> new ProductNotFoundException(PRODUCT_NOT_FOUND));
 
+        productEntity.setQuantity(quantity);
+        productRepository.save(productEntity);
+    }
 }

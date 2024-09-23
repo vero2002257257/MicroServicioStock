@@ -1,6 +1,7 @@
 package MicroServicio.Stock.application.handler;
 
 import MicroServicio.Stock.application.dto.request.ProductRequest;
+import MicroServicio.Stock.application.dto.request.UpdateProductRequest;
 import MicroServicio.Stock.application.dto.response.ProductResponse;
 import MicroServicio.Stock.application.handler.interfaces.IProductHandler;
 import MicroServicio.Stock.application.mapper.request.ProductRequestMapper;
@@ -9,12 +10,15 @@ import MicroServicio.Stock.domain.api.IProductServicePort;
 import MicroServicio.Stock.domain.models.Product;
 import MicroServicio.Stock.domain.pagination.PageCustom;
 import MicroServicio.Stock.domain.pagination.PageRequestCustom;
+import MicroServicio.Stock.infrastructure.exception.ProductNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+
+import static MicroServicio.Stock.utils.Constants.PRODUCT_NOT_FOUND;
 
 
 @Service
@@ -58,5 +62,20 @@ public class ProductHandler implements IProductHandler {
                 productsPage.isAscending()
         );
     }
+    @Override
+    public void updateProduct(UpdateProductRequest updateProductRequest) {
+        Long productId = updateProductRequest.getProductId();
+        int newQuantity = updateProductRequest.getQuantity();
+
+        // Obtener el producto por su ID
+        Product product = productServicePort.getProductById(productId)
+                .orElseThrow(() -> new ProductNotFoundException(PRODUCT_NOT_FOUND));
+
+        int updatedQuantity = product.getQuantity() + newQuantity;
+
+        // Actualizar la cantidad del producto
+        productServicePort.updateQuantity(productId, updatedQuantity);
+    }
+
 
 }

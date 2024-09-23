@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import static MicroServicio.Stock.utils.Constants.PRODUCT_NOT_FOUND;
+
 public class ProductUseCase implements IProductServicePort {
     private final IProductPersistencePort iProductPersistencePort;
 
@@ -81,4 +83,11 @@ public class ProductUseCase implements IProductServicePort {
         return productsPage;
     }
 
+    @Override
+    public void updateQuantity(Long id, int quantity) {
+        if(!iProductPersistencePort.getProductById(id).isPresent()) {
+            throw new ProductNotFoundException(PRODUCT_NOT_FOUND);
+        }
+        iProductPersistencePort.updateQuantity(id, quantity);
+    }
 }
