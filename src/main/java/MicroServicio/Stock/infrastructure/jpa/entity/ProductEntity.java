@@ -10,18 +10,18 @@ import java.util.List;
 
 
 @Entity
-@Table(name = "articles")
+@Table(name = "products")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ArticleEntity {
+public class ProductEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
     private String description;
-    private int cantity;
+    private int quantity;
     private double price;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -30,9 +30,9 @@ public class ArticleEntity {
 
     @ManyToMany
     @JoinTable(
-            name = "articles_categories",
-            joinColumns = @JoinColumn(name = "article_id"),
-            inverseJoinColumns = @JoinColumn(name = "category_id")
+            name = "product_categories",
+            joinColumns = @JoinColumn(name = "product_id"),
+            inverseJoinColumns = @JoinColumn(name = "product_id")
     )
     private List<CategoryEntity> categories;
 }

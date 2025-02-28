@@ -1,26 +1,26 @@
 package MicroServicio.Stock.domain.models;
 import java.util.List;
 
-public class Article {
+public class Product {
 
     private Long id;
     private String name;
     private String description;
-    private int cantity;
+    private int quantity;
     private double price;
     private Brand brand;
     private List<Category> categories;
 
-    public Article(Long id, String name, String description, int cantity, double price, Brand brand, List<Category> categories) {
+    public Product(Long id, String name, String description, int quantity, double price, Brand brand, List<Category> categories) {
         this.id = id;
         this.name = name;
         this.description = description;
-        this.cantity = cantity;
+        this.quantity = quantity;
         this.price = price;
         this.brand = brand;
         this.categories = categories;
     }
-    public Article(){
+    public Product(){
 
     }
 
@@ -48,12 +48,12 @@ public class Article {
         this.description = description;
     }
 
-    public int getCantity() {
-        return cantity;
+    public int getQuantity() {
+        return quantity;
     }
 
-    public void setCantity(int cantity) {
-        this.cantity = cantity;
+    public void setQuantity(int quantity) {
+        this.quantity = quantity;
     }
 
     public double getPrice() {

@@ -9,7 +9,7 @@ import java.util.List;
 
 @Getter
 @Setter
-public class ArticleResponse {
+public class ProductResponse {
     private String name;
     private String description;
     private int cantity;

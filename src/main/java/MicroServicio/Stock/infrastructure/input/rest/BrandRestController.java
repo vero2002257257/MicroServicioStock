@@ -13,6 +13,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,21 +27,30 @@ public class BrandRestController {
 
     private final IBrandHandler brandHandler;
 
-    @Operation(summary = "Create a new brand")
+    @Operation(summary = "Crear una nueva marca",
+            description = "Crea una nueva marca en el sistema")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Brand created successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid input data")
+            @ApiResponse(responseCode = "201", description = "Marca creada exitosamente"),
+            @ApiResponse(responseCode = "400", description = "Datos de entrada incorrectos",
+                    content = @Content(schema = @Schema(implementation = Error.class)))
     })
     @PostMapping("/")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<Void> createBrand(@RequestBody BrandRequest brandRequest) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication.getAuthorities().stream().noneMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
         brandHandler.createBrand(brandRequest);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     @Operation(summary = "Get all brands")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Successfully retrieved list of brands"),
-            @ApiResponse(responseCode = "404", description = "No brands found")
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved list of brands",
+                    content = @Content(schema = @Schema(implementation = BrandResponse.class))),
+            @ApiResponse(responseCode = "404", description = "No brands found",
+                    content = @Content(schema = @Schema(implementation = Error.class)))
     })
     @GetMapping("/")
     public ResponseEntity<List<BrandResponse>> getAllBrands() {
@@ -47,23 +59,27 @@ public class BrandRestController {
 
     @Operation(summary = "Get a brand by name")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Brand found successfully"),
-            @ApiResponse(responseCode = "404", description = "Brand not found")
+            @ApiResponse(responseCode = "200", description = "Brand found successfully",
+                    content = @Content(schema = @Schema(implementation = BrandResponse.class))),
+            @ApiResponse(responseCode = "404", description = "Brand not found",
+                    content = @Content(schema = @Schema(implementation = Error.class)))
     })
     @GetMapping("/{name}")
     public ResponseEntity<BrandResponse> getBrand(@PathVariable String name) {
-        BrandResponse brandResponse = brandHandler.getBrandByName(name);
+        BrandResponse brandResponse = brandHandler.getBrandyByName(name);
         return ResponseEntity.ok(brandResponse);
     }
 
     @Operation(summary = "Update a brand by name")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Brand updated successfully"),
-            @ApiResponse(responseCode = "404", description = "Brand not found"),
-            @ApiResponse(responseCode = "400", description = "Invalid input data")
+            @ApiResponse(responseCode = "404", description = "Brand not found",
+                    content = @Content(schema = @Schema(implementation = Error.class))),
+            @ApiResponse(responseCode = "400", description = "Invalid input data",
+                    content = @Content(schema = @Schema(implementation = Error.class)))
     })
     @PutMapping("/{name}")
-    public ResponseEntity<Void> updateBrand(@PathVariable String name, @RequestBody BrandRequest brandRequest) {
+    public ResponseEntity<Void> updateBrand(@RequestBody BrandRequest brandRequest) {
         brandHandler.updateBrand(brandRequest);
         return ResponseEntity.ok().build();
     }
@@ -71,7 +87,8 @@ public class BrandRestController {
     @Operation(summary = "Delete a brand by name")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Brand deleted successfully"),
-            @ApiResponse(responseCode = "404", description = "Brand not found")
+            @ApiResponse(responseCode = "404", description = "Brand not found",
+                    content = @Content(schema = @Schema(implementation = Error.class)))
     })
     @DeleteMapping("/{name}")
     public ResponseEntity<Void> deleteBrand(@PathVariable String name) {

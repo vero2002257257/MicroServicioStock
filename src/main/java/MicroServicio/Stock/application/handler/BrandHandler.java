@@ -64,4 +64,9 @@ public class BrandHandler implements IBrandHandler {
                 brandsPage.isAscending()
         );
     }
+
+    @Override
+    public BrandResponse getBrandyByName(String name) {
+        return null;
+    }
 }
